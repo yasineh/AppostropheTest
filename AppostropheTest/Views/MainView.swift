@@ -11,33 +11,33 @@ struct MainView: View {
     @State private var aspect: LayoutAspect = .squareLayout
     @State private var showClearAlert = false
 
-    private let tabBarHeight: CGFloat = 80
     private var canvasSize: CGSize {
-        let width = UIScreen.main.bounds.width - 32
-        let height = width * aspect.ratio.h / aspect.ratio.w
-        return CGSize(width: width, height: height)
-    }
-    private var dynamicBottomPadding: CGFloat {
-        tabBarHeight + canvasModel.safeArea().bottom + 10
+        let screenW = UIScreen.main.bounds.width - 32
+        let screenH = UIScreen.main.bounds.height
+        let safeVPadding: CGFloat =
+            172 + canvasModel.safeArea().top + canvasModel.safeArea().bottom
+        let availableH = screenH - safeVPadding
+
+        let desiredH = screenW * aspect.ratio.h / aspect.ratio.w
+
+        if desiredH > availableH {
+            let width = availableH * aspect.ratio.w / aspect.ratio.h
+            return CGSize(width: width, height: availableH)
+        } else {
+            return CGSize(width: screenW, height: desiredH)
+        }
     }
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                Spacer(minLength: 40)
-
+            VStack {
+                NavBar()
+                Spacer()
                 CanvasView(height: canvasSize.height)
                     .environmentObject(canvasModel)
                     .frame(width: canvasSize.width, height: canvasSize.height)
                     .padding(.horizontal, 16)
-
-                Spacer()
-            }
-            .padding(.bottom, dynamicBottomPadding)
-
-            VStack {
                 Spacer()
                 TabBar {
                     TabBarButton(icon: "square.grid.2x2", label: "Layout") {

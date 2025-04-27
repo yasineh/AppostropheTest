@@ -47,11 +47,11 @@ struct CanvasItemView<Content: View>: View {
     private var selectionOverlay: some View {
         ZStack {
             if isSelected {
-                RoundedRectangle(cornerRadius: 8)
+                Rectangle()
                     .stroke(Color.blue.opacity(0.4), lineWidth: 8)
                     .blur(radius: 8)
 
-                RoundedRectangle(cornerRadius: 8)
+                Rectangle()
                     .stroke(
                         LinearGradient(
                             gradient: Gradient(colors: [Color.blue, Color.purple]),
