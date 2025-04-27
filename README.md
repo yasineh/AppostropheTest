@@ -5,6 +5,7 @@
 
 A lightweight SwiftUI canvas editor inspired by SCRL’s editor.
 Supports adding, moving, resizing, rotating, and snapping items.
+Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983c03a4a97b73121c475d84432) to assignment details
 
 ### ✨ Features
  - 📸 Import images from device gallery
@@ -16,7 +17,7 @@ Supports adding, moving, resizing, rotating, and snapping items.
 
  ### Setup Instructions
 
-  - Clone the repo
+ - Clone the repo
  - Open .xcodeproj file
  - Make sure Deployment Target is iOS 17+
  - Run on Simulator or Device
