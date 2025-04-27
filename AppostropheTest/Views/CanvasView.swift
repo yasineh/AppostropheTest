@@ -16,7 +16,35 @@ struct CanvasView: View {
                         canvasModel.selectedItemID = nil
                     }
 
-
+                ForEach(canvasModel.snappLines) { snapp in
+                    if snapp.orientation == .vertical {
+                        Rectangle()
+                            .fill(Color.yellow)
+                            .frame(width: 1, height: snapp.end - snapp.start)
+                            .offset(
+                                x: snapp.position,
+                                y: (snapp.start + snapp.end) / 2
+                            )
+                            .opacity(canvasModel.snappLines.isEmpty ? 0 : 1)
+                            .animation(
+                                .easeInOut(duration: 0.2),
+                                value: canvasModel.snappLines
+                            )
+                    } else {
+                        Rectangle()
+                            .fill(Color.yellow)
+                            .frame(width: snapp.end - snapp.start, height: 1)
+                            .offset(
+                                x: (snapp.start + snapp.end) / 2,
+                                y: snapp.position
+                            )
+                            .opacity(canvasModel.snappLines.isEmpty ? 0 : 1)
+                            .animation(
+                                .easeInOut(duration: 0.2),
+                                value: canvasModel.snappLines
+                            )
+                    }
+                }
 
                 ForEach($canvasModel.stack) { $stackItem in
                     CanvasItemView(
@@ -31,7 +59,11 @@ struct CanvasView: View {
                         canvasModel.showDeleteAlert.toggle()
                     }
                 }
-            }
+            }.frame(width: size.width, height: size.height)
+                .onAppear { canvasModel.canvasSize = size }
+                .onChange(of: size) { _, newSize in
+                    canvasModel.canvasSize = newSize
+                }
         }.frame(height: height)
             .clipped()
             .alert(
@@ -66,4 +98,3 @@ struct CanvasView: View {
     }
 
 }
-

@@ -108,6 +108,37 @@ struct CanvasItemView<Content: View>: View {
                             })
                     )
             )
+            // MARK: Drag
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        if canvasModel.selectedItemID != stackItem.id {
+                            canvasModel.selectedItemID = stackItem.id
+                        }
+                        let proposed = CGSize(
+                            width: stackItem.lastOffset.width
+                                + value.translation.width,
+                            height: stackItem.lastOffset.height
+                                + value.translation.height
+                        )
+                        let itemSize = CGSize(
+                            width: stackItem.frameSize.width
+                                * max(stackItem.scale, 0.4),
+                            height: stackItem.frameSize.height
+                                * max(stackItem.scale, 0.4)
+                        )
+                        let snapped = canvasModel.snappedOffset(
+                            for: proposed,
+                            of: stackItem,
+                            itemSize: itemSize
+                        )
+                        stackItem.offset = snapped
+                    }
+                    .onEnded { _ in
+                        stackItem.lastOffset = stackItem.offset
+                        canvasModel.clearGuidelines()
+                    }
+            )
             // MARK: Scale/Rotate
             .gesture(
                 MagnificationGesture()
