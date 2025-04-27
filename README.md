@@ -1,16 +1,14 @@
 
-# Appostrophe Test
-## Canvas Editor
-
-
+# Appostrophe Test - Canvas Editor
+ 
 A lightweight SwiftUI canvas editor inspired by SCRL’s editor.
 Supports adding, moving, resizing, rotating, and snapping items.
 Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983c03a4a97b73121c475d84432) to assignment details
-### 📸 Preview
+## 📸 Preview
 
 <img src="./preview.png" width="500"/>
 
-### ✨ Features
+## ✨ Features
  - 📸 Import images from device gallery
  - 🖼 Import overlays from remote endpoint
  - ✏️ Drag to move, rotate, and resize items
@@ -18,7 +16,7 @@ Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983
  - 🖼 Change canvas layout
  - 📥 Save canvas to photo library
 
- ### Setup Instructions
+ ## Setup Instructions
 
  - Clone the repo
  - Open .xcodeproj file
@@ -27,7 +25,7 @@ Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983
 
 ✅ SwiftUI + native libraries.
 
-### Third-party Tools
+## Third-party Tools
 
 [Kingfisher](https://github.com/onevcat/Kingfisher)
 
