@@ -80,6 +80,17 @@ struct MainView: View {
                 handleSelectedImages()
             }
         }
+        .sheet(isPresented: $showOverlaySheet) {
+            OverlayPickerView { overlay in
+                RemoteImageLoader.load(url: overlay.url) { loadedImage in
+                    guard let image = loadedImage else {
+                        print("[OverlayPicker] Failed to load overlay image")
+                        return
+                    }
+                    canvasModel.addImageToStack(image: image)
+                }
+            }
+        }
 
     }
 }

@@ -1,14 +1,13 @@
-//
-//  AppostropheTestApp.swift
-//  AppostropheTest
-//
-//  Created by Yasin Ehsani on 2025-04-27.
+//  Created by Yasin Ehsani
 //
 
 import SwiftUI
 
 @main
 struct AppostropheTestApp: App {
+    init() {
+        AppConfig.configureImageLoading()
+    }
     var body: some Scene {
         WindowGroup {
             MainView()
