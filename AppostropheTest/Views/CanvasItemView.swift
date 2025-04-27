@@ -7,7 +7,7 @@ struct CanvasItemView<Content: View>: View {
     var content: Content
     @Binding var stackItem: StackItem
     var moveFront: () -> Void
-    var onDelete: (() -> Void)
+    var onDelete: () -> Void
     let isSelected: Bool
 
     init(
@@ -30,137 +30,126 @@ struct CanvasItemView<Content: View>: View {
 
     var body: some View {
         content
-            .overlay(
-                ZStack {
-                    if isSelected {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.blue.opacity(0.4), lineWidth: 8)
-                            .blur(radius: 8)
-                            .offset(x: 0, y: 0)
-                            .foregroundColor(.blue)
-                            .transition(.opacity)
-
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        Color.blue, Color.purple,
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
-                            )
-                            .shadow(color: Color.blue.opacity(0.7), radius: 10)
-                    }
-                }
-                .animation(.easeInOut(duration: 0.3), value: isSelected)
-            )
+            .overlay(selectionOverlay)
             .rotationEffect(stackItem.rotation)
             .scaleEffect(max(stackItem.scale, 0.4) * hapticScale)
             .offset(stackItem.offset)
-            .onAppear {
-                if isSelected {
-                    withAnimation(
-                        .easeInOut(duration: 1).repeatForever(
-                            autoreverses: true
-                        )
-                    ) {
-                        pulsateScale = 1.05
-                    }
-                }
+            .onAppear { updatePulsateAnimation() }
+            .onChange(of: isSelected) { _, _ in updatePulsateAnimation() }
+            .highPriorityGesture(tapToSelectGesture)
+            .gesture(doubleTapOrHoldGesture)
+            .gesture(dragGesture)
+            .gesture(scaleAndRotateGesture)
+    }
+
+    // MARK: - Selection Overlay
+
+    private var selectionOverlay: some View {
+        ZStack {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.blue.opacity(0.4), lineWidth: 8)
+                    .blur(radius: 8)
+
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue, Color.purple]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+                    .shadow(color: Color.blue.opacity(0.7), radius: 10)
             }
-            .onChange(of: isSelected) { _, newValue in
-                if newValue {
-                    withAnimation(
-                        .easeInOut(duration: 1).repeatForever(
-                            autoreverses: true
-                        )
-                    ) {
-                        pulsateScale = 1.05
-                    }
-                } else {
-                    pulsateScale = 1.0
-                }
+        }
+        .animation(.easeInOut(duration: 0.3), value: isSelected)
+    }
+
+    // MARK: - Gestures
+
+    private var tapToSelectGesture: some Gesture {
+        TapGesture()
+            .onEnded {
+                canvasModel.selectedItemID = stackItem.id
             }
-            // MARK: Tap to select
-            .highPriorityGesture(
-                TapGesture().onEnded {
+    }
+
+    private var doubleTapOrHoldGesture: some Gesture {
+        TapGesture(count: 2)
+            .onEnded {
+                onDelete()
+            }
+            .simultaneously(
+                with: LongPressGesture(minimumDuration: 0.3)
+                    .onEnded { _ in
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        withAnimation(.easeInOut) {
+                            hapticScale = 1.2
+                        }
+                        withAnimation(.easeInOut.delay(0.1)) {
+                            hapticScale = 1
+                        }
+                        moveFront()
+                    }
+            )
+    }
+
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if canvasModel.selectedItemID != stackItem.id {
                     canvasModel.selectedItemID = stackItem.id
                 }
-            )
-            // MARK: Double tap to delete / Hold to bring to front
-            .gesture(
-                TapGesture(count: 2)
-                    .onEnded { onDelete() }
-                    .simultaneously(
-                        with: LongPressGesture(minimumDuration: 0.3)
-                            .onEnded({ _ in
-                                UIImpactFeedbackGenerator(style: .medium)
-                                    .impactOccurred()
-                                withAnimation(.easeInOut) {
-                                    hapticScale = 1.2
-                                }
-                                withAnimation(.easeInOut.delay(0.1)) {
-                                    hapticScale = 1
-                                }
-                                moveFront()
-                            })
-                    )
-            )
-            // MARK: Drag
-            .gesture(
-                DragGesture()
+                let proposed = CGSize(
+                    width: stackItem.lastOffset.width + value.translation.width,
+                    height: stackItem.lastOffset.height + value.translation.height
+                )
+                let itemSize = CGSize(
+                    width: stackItem.frameSize.width * max(stackItem.scale, 0.4),
+                    height: stackItem.frameSize.height * max(stackItem.scale, 0.4)
+                )
+                stackItem.offset = canvasModel.snappedOffset(
+                    for: proposed,
+                    of: stackItem,
+                    itemSize: itemSize
+                )
+            }
+            .onEnded { _ in
+                stackItem.lastOffset = stackItem.offset
+                canvasModel.clearGuidelines()
+            }
+    }
+
+    private var scaleAndRotateGesture: some Gesture {
+        MagnificationGesture()
+            .onChanged { value in
+                if canvasModel.selectedItemID != stackItem.id {
+                    canvasModel.selectedItemID = stackItem.id
+                }
+                stackItem.scale = stackItem.lastScale + (value - 1)
+            }
+            .onEnded { _ in
+                stackItem.lastScale = stackItem.scale
+            }
+            .simultaneously(
+                with: RotationGesture()
                     .onChanged { value in
-                        if canvasModel.selectedItemID != stackItem.id {
-                            canvasModel.selectedItemID = stackItem.id
-                        }
-                        let proposed = CGSize(
-                            width: stackItem.lastOffset.width
-                                + value.translation.width,
-                            height: stackItem.lastOffset.height
-                                + value.translation.height
-                        )
-                        let itemSize = CGSize(
-                            width: stackItem.frameSize.width
-                                * max(stackItem.scale, 0.4),
-                            height: stackItem.frameSize.height
-                                * max(stackItem.scale, 0.4)
-                        )
-                        let snapped = canvasModel.snappedOffset(
-                            for: proposed,
-                            of: stackItem,
-                            itemSize: itemSize
-                        )
-                        stackItem.offset = snapped
+                        stackItem.rotation = stackItem.lastRotation + value
                     }
                     .onEnded { _ in
-                        stackItem.lastOffset = stackItem.offset
-                        canvasModel.clearGuidelines()
+                        stackItem.lastRotation = stackItem.rotation
                     }
             )
-            // MARK: Scale/Rotate
-            .gesture(
-                MagnificationGesture()
-                    .onChanged({ value in
-                        if canvasModel.selectedItemID != stackItem.id {
-                            canvasModel.selectedItemID = stackItem.id
-                        }
-                        stackItem.scale = stackItem.lastScale + (value - 1)
-                    }).onEnded({ value in
-                        stackItem.lastScale = stackItem.scale
-                    })
-                    .simultaneously(
-                        with:
-                            RotationGesture()
-                            .onChanged({ value in
-                                stackItem.rotation =
-                                    stackItem.lastRotation + value
-                            }).onEnded({ value in
-                                stackItem.lastRotation = stackItem.rotation
-                            })
-                    )
-            )
+    }
 
+    private func updatePulsateAnimation() {
+        if isSelected {
+            withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                pulsateScale = 1.05
+            }
+        } else {
+            pulsateScale = 1.0
+        }
     }
 }
