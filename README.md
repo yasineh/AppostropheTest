@@ -29,3 +29,5 @@ Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983
 [Kingfisher](https://github.com/onevcat/Kingfisher)
 
 ### 📸 Preview
+
+[preview](https://github.com/yasineh/AppostropheTest?tab=readme-ov-file#:~:text=2%20hours%20ago-,preview.png,-add%20preview%20img)
