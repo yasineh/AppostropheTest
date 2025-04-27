@@ -15,10 +15,10 @@ public struct TabBar<Content: View>: View {
             content
         }
         .padding(.vertical, 12)
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 5)
         .background(Material.ultraThin)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 15)
         .padding(.bottom, safeBottomPadding)
         .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 4)
     }
@@ -30,4 +30,7 @@ public struct TabBar<Content: View>: View {
         }
         return window.safeAreaInsets.bottom + 10
     }
+}
+#Preview {
+    MainView()
 }

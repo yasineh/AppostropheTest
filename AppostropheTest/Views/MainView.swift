@@ -9,6 +9,7 @@ struct MainView: View {
     @State private var showLayoutSheet = false
     @State private var showOverlaySheet = false
     @State private var aspect: LayoutAspect = .squareLayout
+    @State private var showClearAlert = false
 
     private let tabBarHeight: CGFloat = 80
     private var canvasSize: CGSize {
@@ -52,12 +53,20 @@ struct MainView: View {
                     TabBarButton(icon: "square.and.arrow.down", label: "Save") {
                         saveCanvas()
                     }
+                    TabBarButton(icon: "trash", label: "Clear") {
+                        showClearAlert = true
+                    }
                 }
             }
         }
         .preferredColorScheme(.dark)
         .alert(canvasModel.errorMessage, isPresented: $canvasModel.showError) {}
-
+        .alert("Clear All?", isPresented: $showClearAlert) {
+            Button("Clear Everything", role: .destructive) {
+                canvasModel.clearCanvas()
+            }
+            Button("Cancel", role: .cancel) {}
+        }
         .sheet(isPresented: $showLayoutSheet) {
             LayoutPicker(selected: $aspect)
         }
