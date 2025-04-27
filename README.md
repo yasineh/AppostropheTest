@@ -30,4 +30,4 @@ Here is [link](https://appostrophe.notion.site/iOS-Technical-Assignment-9f8b8983
 
 ### 📸 Preview
 
-<img src="./preview.png" height="300"/>
+<img src="./preview.png" width="500"/>
